@@ -1,0 +1,9 @@
+{
+  "Plugins": [
+    {
+      "Name": "TestPlugin",
+      "Path": "/home/micodiy/RiderProjects/UnifiedToolchain/TestPlugin/bin/Debug/net8.0/TestPlugin",
+      "Args": ""
+    }
+  ]
+}
