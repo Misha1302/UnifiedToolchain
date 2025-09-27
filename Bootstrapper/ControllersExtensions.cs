@@ -7,8 +7,8 @@ public static class ControllersExtensions
     public static string GetServiceUri(this Controller controller)
     {
         var req = controller.Request;
-        // var locationWithMethod = new Uri($"{req.Scheme}://{req.Host}{req.Path}{req.QueryString}");
-        var location = new Uri($"{req.Scheme}://{req.Host}{req.Path}");
-        return location.AbsoluteUri;
+        var location = new Uri($"{req.Scheme}://{req.Host}{req.Path}").AbsoluteUri;
+        var str = location[..(location.LastIndexOf('/') + 1)];
+        return str;
     }
 }

@@ -1,0 +1,9 @@
+{
+  "Plugins": [
+    {
+      "Name": "TestPlugin",
+      "Path": "TestPlugin/bin/net8.0/TestPlugin",
+      "Args": ""
+    }
+  ]
+}

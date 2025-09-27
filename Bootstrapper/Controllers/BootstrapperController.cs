@@ -1,18 +1,20 @@
+using System.Reflection;
 using ExceptionsManager;
 using Jsons;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PluginIdentifiers;
+using Plugins;
 using RequestsManager;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Bootstrapper.Controllers;
 
 [ApiController]
-[Route("[controller]/[action]")]
+[Route("[action]")]
 public class BootstrapperController(BootstrapperData data) : Controller
 {
-    private Json ControllerUriJson => new($$""" { "BootstrapperUri": "{{this.GetServiceUri()}}" } """);
+    private Json ControllerUriJson => new(new { BootstrapperUri = this.GetServiceUri() });
 
     [HttpPost]
     public Json GetPlugins(Json json) => PluginsCollection.Serialize(data.Plugins);
@@ -22,18 +24,38 @@ public class BootstrapperController(BootstrapperData data) : Controller
     {
         var dynJson = (dynamic)json;
 
+        var identifier = GetInterfaceIdentifier((string)dynJson.Path);
         var plugin = new Plugin(
-            (string)dynJson.Name, (string)dynJson.Path, (string)dynJson.Args, (string)dynJson.Uri
+            (string)dynJson.Name,
+            (string)dynJson.Path,
+            (string)dynJson.Args,
+            (string)dynJson.Uri,
+            identifier
         );
-        await Services.Send(plugin.UriWithName, "Initialize", ControllerUriJson);
+
+        Services.RegisterServer(identifier, plugin.Uri);
+        await Services.Send(identifier, "IsInitialized", ControllerUriJson);
         data.Plugins.Add(plugin);
+
         return Jsons.Json.Empty;
+    }
+
+    private Type GetInterfaceIdentifier(string path)
+    {
+        path = Path.GetFullPath(path);
+        if (!path.EndsWith(".dll")) path += ".dll";
+        return Assembly.LoadFile(path).GetTypes()
+            .Where(x => x.IsInterface)
+            .First(x => x.GetCustomAttributes().Any(y => y is IdentifierAttribute));
     }
 
     [HttpPost]
     public async Task<Json> ImportConfiguration(Json json)
     {
-        dynamic configuration = new Json(await System.IO.File.ReadAllTextAsync((string)((dynamic)json).Path));
+        var path = (string)((dynamic)json).Path;
+        path = Path.GetFullPath(path);
+        Thrower.AssertAlways(System.IO.File.Exists(path), "Configuration file not found");
+        dynamic configuration = new Json(await System.IO.File.ReadAllTextAsync(path));
         var plugins = configuration.Plugins;
 
         data.PluginsToImport.AddRange(
@@ -42,15 +64,13 @@ public class BootstrapperController(BootstrapperData data) : Controller
             )
         );
 
-        var tasks = data.PluginsToImport.Select(x => PluginsRunner.Instance.Run(x.Path, x.Uri, x.Args));
+        var tasks = data.PluginsToImport
+            .Select(x => PluginsRunner.Instance.Run(x.Path, x.Uri, x.Args));
         Task.WaitAll(tasks.ToArray());
 
         while (data.PluginsToImport.Count != 0)
         {
-            var res = data.PluginsToImport
-                .FirstOrDefault(t =>
-                    ((dynamic)Services.Send(t.UriWithName, "CanBeInitialized", ControllerUriJson).Result).Success
-                );
+            var res = data.PluginsToImport.FirstOrDefault();
 
             Thrower.AssertAlways(
                 res != null,
@@ -59,8 +79,7 @@ public class BootstrapperController(BootstrapperData data) : Controller
 
             data.PluginsToImport.Remove(res);
 
-            var j = new Json(JsonConvert.SerializeObject(res));
-            await ImportPlugin(j);
+            await ImportPlugin(new Json(res));
         }
 
         return Jsons.Json.Empty;

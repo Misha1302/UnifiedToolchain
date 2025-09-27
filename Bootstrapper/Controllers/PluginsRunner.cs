@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using ExceptionsManager;
 
 namespace Bootstrapper.Controllers;
@@ -7,7 +8,9 @@ public class PluginsRunner
 {
     public static readonly PluginsRunner Instance = new();
 
-    public async Task Run(string path, string uri, string args = "")
+    private readonly List<Process> _ranProcesses = [];
+
+    public async Task Run(string path, string uri, string args = "", bool redirectOutput = true)
     {
         var startInfo = new ProcessStartInfo
         {
@@ -18,19 +21,25 @@ public class PluginsRunner
                 ["ASPNETCORE_URLS"] = uri,
                 ["ASPNETCORE_ENVIRONMENT"] = "Development",
             },
+            RedirectStandardOutput = redirectOutput,
         };
 
-        var process = Process.Start(startInfo);
-        process.ThrowIfNull();
+        var process = Process.Start(startInfo).ThrowIfNull();
+        _ranProcesses.Add(process);
 
+        await WaitInitialization(uri, process);
+    }
 
-        // wait initializing
+    private static async Task WaitInitialization(string uri, Process process)
+    {
         while (!process.HasExited)
         {
             try
             {
                 var client = new HttpClient();
-                var responce = await client.GetAsync(uri + "Initialized");
+                var content = new StringContent("{}", Encoding.UTF8, "application/json");
+                // Initialized, not IsInitialized, 'cause it's a controller, not a method
+                var responce = await client.PostAsync(uri + "IsInitialized", content);
                 if (responce.IsSuccessStatusCode)
                     return;
             }
@@ -38,7 +47,12 @@ public class PluginsRunner
             {
             }
 
-            await Task.Delay(100);
+            await Task.Yield();
         }
+    }
+
+    ~PluginsRunner()
+    {
+        _ranProcesses.ForEach(x => x.Kill());
     }
 }

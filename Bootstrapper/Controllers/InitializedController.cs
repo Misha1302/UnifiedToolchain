@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bootstrapper.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("[action]")]
 public class InitializedController : ControllerBase
 {
-    [HttpGet]
-    public Json IsInitialized() => new("{\"Hello\":123}");
+    [HttpPost]
+    public Json IsInitialized() => new(new { Hello = 123 });
 }

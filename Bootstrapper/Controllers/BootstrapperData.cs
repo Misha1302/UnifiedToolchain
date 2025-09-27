@@ -1,3 +1,5 @@
+using Plugins;
+
 namespace Bootstrapper.Controllers;
 
 public class BootstrapperData

@@ -1,21 +1,20 @@
-﻿using Bootstrapper.Controllers;
-using Jsons;
-using RequestsManager;
+﻿using Bootstrapper;
 
-var uri = "http://localhost:5019/";
-await PluginsRunner.Instance.Run(
-    "/home/micodiy/RiderProjects/UnifiedToolchain/Bootstrapper/bin/Debug/net8.0/Bootstrapper",
+CurrentDirectory.Init();
+
+const string uri = "http://localhost:5019/";
+await PluginsRunner.Instance.Run("Bootstrapper/bin/net8.0/Bootstrapper",
     uri
 );
 
-Services.RegisterServer<IBootstrapper>(uri + "Bootstrapper/");
+Services.RegisterServer<IBootstrapper>(uri);
 
-Request<IBootstrapper>.Instance.ImportConfiguration(
-    """
-    { "Path": "/home/micodiy/RiderProjects/UnifiedToolchain/UnifiedToolchain/Configuration.json" } 
-    """
-);
-var plugins = Request<IBootstrapper>.Instance.GetPlugins(Json.Empty);
-Console.WriteLine(plugins);
+MeasuringTimer.Instance.Measure(() =>
+    Request<IBootstrapper>.Instance.ImportConfiguration(
+        new Json(new { Path = "UnifiedToolchain/toolchain_configuration.json" })
+    )
+).Print("ImportConfiguration took {0}ms");
 
-public interface IBootstrapper;
+MeasuringTimer.Instance.Measure(() =>
+    Request<IBootstrapper>.Instance.GetPlugins(Json.Empty)
+).Print("GetPlugins took {0}ms");

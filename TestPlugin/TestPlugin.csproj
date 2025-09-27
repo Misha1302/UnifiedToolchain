@@ -6,12 +6,27 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <OutputPath>bin/</OutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <OutputPath>bin/</OutputPath>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Jsons\Jsons.csproj"/>
+        <ProjectReference Include="..\PluginIdentifiers\PluginIdentifiers.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="plugin_configuration.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

@@ -9,7 +9,9 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Bootstrapper\Bootstrapper.csproj"/>
+        <ProjectReference Include="..\DirectoryManager\DirectoryManager.csproj"/>
         <ProjectReference Include="..\RequestsManager\RequestsManager.csproj"/>
+        <ProjectReference Include="..\Timer\Timer.csproj"/>
     </ItemGroup>
 
 </Project>

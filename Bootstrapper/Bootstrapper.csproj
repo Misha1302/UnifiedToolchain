@@ -6,6 +6,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <OutputPath>bin</OutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <OutputPath>bin</OutputPath>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
@@ -19,6 +27,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Jsons\Jsons.csproj"/>
+        <ProjectReference Include="..\PluginIdentifiers\PluginIdentifiers.csproj"/>
+        <ProjectReference Include="..\Plugins\Plugins.csproj"/>
         <ProjectReference Include="..\RequestsManager\RequestsManager.csproj"/>
     </ItemGroup>
 

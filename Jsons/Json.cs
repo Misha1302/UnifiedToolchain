@@ -11,6 +11,10 @@ public class Json(string text) : DynamicObject
 
     private readonly dynamic _dict = JsonConvert.DeserializeObject(text).ThrowIfNull();
 
+    public Json(object someObj) : this(someObj as string ?? JsonConvert.SerializeObject(someObj))
+    {
+    }
+
     public override string ToString() => JsonConvert.SerializeObject(_dict, Formatting.None);
 
     public string ToStringPretty() => JsonConvert.SerializeObject(_dict, Formatting.Indented);
@@ -26,7 +30,8 @@ public class Json(string text) : DynamicObject
 
     public override bool TryGetMember(GetMemberBinder binder, out object? result)
     {
-        Thrower.AssertAlways(_dict.ContainsKey(binder.Name), $"Invalid member ({binder.Name})");
+        if (_dict.GetType() != typeof(JArray))
+            Thrower.AssertAlways(_dict.ContainsKey(binder.Name), $"Invalid member ({binder.Name})");
         result = _dict[binder.Name];
         return true;
     }

@@ -5,7 +5,16 @@ namespace JsonTests;
 public class Tests
 {
     private readonly dynamic _complexJson =
-        new Json(""" { "v1": true, "v2": "some string", "v3": [ { "v4": 123 } ] } """);
+        new Json(new
+            {
+                v1 = true,
+                v2 = "some string",
+                v3 = (List<object>)
+                [
+                    new { v4 = 123 },
+                ],
+            }
+        );
 
     [SetUp]
     public void Setup()

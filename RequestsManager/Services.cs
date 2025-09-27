@@ -9,14 +9,20 @@ public static class Services
 {
     private static readonly Dictionary<Type, string> _urls = [];
 
-    public static void RegisterServer<T>(string url)
+    public static void RegisterServer<T>(string url) => RegisterServer(typeof(T), url);
+
+    public static void RegisterServer(Type type, string url)
     {
-        _urls[typeof(T)] = url;
+        _urls[type] = url;
     }
 
-    public static async Task<Json> Send<T>(string method, Json data) => await Send(_urls[typeof(T)], method, data);
+    public static async Task<Json> Send<T>(string method, Json data) =>
+        await Send(_urls[typeof(T)], method, data);
 
-    public static async Task<Json> Send(string url, string method, Json data)
+    public static async Task Send(Type t, string method, Json data) =>
+        await Send(_urls[t], method, data);
+
+    private static async Task<Json> Send(string url, string method, Json data)
     {
         using var client = new HttpClient();
 
@@ -28,7 +34,8 @@ public static class Services
 
         var response = await client.PostAsync($"{url}{method}", content);
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+            response.EnsureSuccessStatusCode();
 
         var responseString = response.Content.ReadAsStringAsync().Result;
         // TODO: wtf, how to do this right?

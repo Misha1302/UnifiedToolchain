@@ -2,7 +2,7 @@ using System.Collections;
 using Jsons;
 using Newtonsoft.Json;
 
-namespace Bootstrapper;
+namespace Plugins;
 
 public class PluginsCollection(List<Plugin>? plugins = null) : IEnumerable
 {
