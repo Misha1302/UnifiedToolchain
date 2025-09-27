@@ -34,8 +34,7 @@ public static class Services
 
         var response = await client.PostAsync($"{url}{method}", content);
 
-        if (!response.IsSuccessStatusCode)
-            response.EnsureSuccessStatusCode();
+        response.EnsureSuccessStatusCode();
 
         var responseString = response.Content.ReadAsStringAsync().Result;
         // TODO: wtf, how to do this right?

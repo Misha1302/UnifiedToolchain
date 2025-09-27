@@ -38,7 +38,6 @@ public class PluginsRunner
             {
                 var client = new HttpClient();
                 var content = new StringContent("{}", Encoding.UTF8, "application/json");
-                // Initialized, not IsInitialized, 'cause it's a controller, not a method
                 var responce = await client.PostAsync(uri + "IsInitialized", content);
                 if (responce.IsSuccessStatusCode)
                     return;

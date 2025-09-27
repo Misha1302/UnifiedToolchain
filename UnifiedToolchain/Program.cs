@@ -3,9 +3,7 @@
 CurrentDirectory.Init();
 
 const string uri = "http://localhost:5019/";
-await PluginsRunner.Instance.Run("Bootstrapper/bin/net8.0/Bootstrapper",
-    uri
-);
+await PluginsRunner.Instance.Run("Bootstrapper/bin/net8.0/Bootstrapper", uri);
 
 Services.RegisterServer<IBootstrapper>(uri);
 

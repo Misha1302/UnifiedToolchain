@@ -1,4 +1,5 @@
 using System.Reflection;
+using CommonExtensions;
 using ExceptionsManager;
 using Jsons;
 using Microsoft.AspNetCore.Mvc;
@@ -53,7 +54,6 @@ public class BootstrapperController(BootstrapperData data) : Controller
     public async Task<Json> ImportConfiguration(Json json)
     {
         var path = (string)((dynamic)json).Path;
-        path = Path.GetFullPath(path);
         Thrower.AssertAlways(System.IO.File.Exists(path), "Configuration file not found");
         dynamic configuration = new Json(await System.IO.File.ReadAllTextAsync(path));
         var plugins = configuration.Plugins;
@@ -68,7 +68,7 @@ public class BootstrapperController(BootstrapperData data) : Controller
             .Select(x => PluginsRunner.Instance.Run(x.Path, x.Uri, x.Args));
         Task.WaitAll(tasks.ToArray());
 
-        while (data.PluginsToImport.Count != 0)
+        while (!data.PluginsToImport.IsEmpty())
         {
             var res = data.PluginsToImport.FirstOrDefault();
 
